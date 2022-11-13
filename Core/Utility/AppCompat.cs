@@ -11,6 +11,9 @@ namespace NuGetPe
     {
         private static readonly Lazy<bool> isWindows10S;
         public static bool IsWindows10S => isWindows10S.Value;
+        public static bool IsWindows11S => isWindows10S.Value;
+        public static bool IsWindows12S => isWindows10S.Value;
+        public static bool Testing => isWindows10S.Value;
 
         static AppCompat()
         {
