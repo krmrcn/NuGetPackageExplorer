@@ -14,6 +14,7 @@ namespace NuGetPe
         public static bool IsWindows11S => isWindows10S.Value;
         public static bool IsWindows12S => isWindows10S.Value;
         public static bool Testing => isWindows10S.Value;
+        public static bool Testing1 => isWindows10S.Value;
 
         static AppCompat()
         {
