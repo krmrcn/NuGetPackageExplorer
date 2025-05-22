@@ -1,9 +1,5 @@
-﻿using System;
-using System.Globalization;
-using System.Reflection;
-using System.Windows;
-using System.Windows.Documents;
-using StringResources = PackageExplorer.Resources;
+﻿using System.Windows;
+using NuGetPe;
 
 namespace PackageExplorer
 {
@@ -15,14 +11,15 @@ namespace PackageExplorer
         public ValidationResultWindow()
         {
             InitializeComponent();
-            
+
+            DiagnosticsClient.TrackPageView(nameof(ValidationResultWindow));
         }
-        
+
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = true;
         }
-        
+
     }
 }

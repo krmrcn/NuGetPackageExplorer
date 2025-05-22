@@ -12,16 +12,14 @@ namespace NuGetPackageExplorer.Types
         [SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "InFolder")]
         public static IEnumerable<string> GetFilesInFolder(this IPackage package, string folder)
         {
-            if (folder == null)
-            {
-                throw new ArgumentNullException("folder");
-            }
+            ArgumentNullException.ThrowIfNull(package);
+            ArgumentNullException.ThrowIfNull(folder);
 
             if (string.IsNullOrEmpty(folder))
             {
                 // return files at the root
                 return from s in package.GetFiles()
-                       where s.Path.IndexOf(Path.DirectorySeparatorChar) == -1
+                       where !s.Path.Contains(Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
                        select s.Path;
             }
             else

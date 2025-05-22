@@ -1,0 +1,14 @@
+{
+  "solution": {
+    "path": "NuGetPackageExplorer.sln",
+    "projects": [
+      "Core\\Core.csproj",
+      "PackageExplorer\\NugetPackageExplorer.Views.Shared.shproj",
+      "PackageViewModel\\PackageViewModel.csproj",
+      "Types\\Types.csproj",
+      "Uno\\Api\\Api.csproj",
+      "Uno\\NuGetPackageExplorer\\NuGetPackageExplorer.WinUI.csproj",
+      "Uno\\NugetPackageExplorer.Legacy\\NugetPackageExplorer.Shared.Legacy.shproj"
+    ]
+  }
+}

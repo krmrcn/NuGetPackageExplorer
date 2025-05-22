@@ -1,20 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Data;
 using NuGet.Packaging;
-using NuGetPe;
+
+#if HAS_UNO
+using Microsoft.UI.Xaml.Data;
+
+using _CultureInfo = System.String;
+#else
+using System.Windows.Data;
+
+using _CultureInfo = System.Globalization.CultureInfo;
+#endif
 
 namespace PackageExplorer
 {
     public class ReferenceSetConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, _CultureInfo culture)
         {
             var referenceSets = (ICollection<PackageReferenceSet>)value;
             if (referenceSets.Any(d => d.TargetFramework != null))
             {
-                // if there is at least one dependeny set with non-null target framework,
+                // if there is at least one dependency set with non-null target framework,
                 // we show the dependencies grouped by target framework.
                 return referenceSets;
             }
@@ -23,7 +31,7 @@ namespace PackageExplorer
             return referenceSets.SelectMany(d => d.References);
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, _CultureInfo culture)
         {
             throw new NotImplementedException();
         }

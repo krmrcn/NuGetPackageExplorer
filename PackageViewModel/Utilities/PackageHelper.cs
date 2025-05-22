@@ -3,28 +3,25 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using NuGetPe;
-using NuGetPackageExplorer.Types;
 using NuGet.Packaging;
+using NuGetPackageExplorer.Types;
+using NuGetPe;
 
 namespace PackageExplorerViewModel
 {
     internal static class PackageHelper
     {
-        [SuppressMessage(
-            "Microsoft.Design",
-            "CA1031:DoNotCatchGeneralExceptionTypes",
-            Justification = "We don't really care of deleting temp file fails.")]
         public static void SavePackage(IPackageMetadata packageMetadata, IEnumerable<IPackageFile> files,
                                        string targetFilePath, bool useTempFile)
         {
             var builder = new PackageBuilder();
             // set metadata
             CopyMetadata(packageMetadata, builder);
+
             // add files
             builder.Files.AddRange(files);
 
-            // create package in the temprary file first in case the operation fails which would
+            // create package in the temporary file first in case the operation fails which would
             // override existing file with a 0-byte file.
             var fileNameToUse = useTempFile ? Path.GetTempFileName() : targetFilePath;
             try
@@ -75,14 +72,14 @@ namespace PackageExplorerViewModel
             {
                 if (rule != null)
                 {
-                    PackageIssue[] issues = null;
+                    PackageIssue[]? issues = null;
                     try
                     {
                         issues = rule.Validate(package, packageSource).ToArray();
                     }
                     catch (Exception)
                     {
-                        issues = new PackageIssue[0];
+                        issues = Array.Empty<PackageIssue>();
                     }
 
                     // can't yield inside a try/catch block
@@ -92,18 +89,6 @@ namespace PackageExplorerViewModel
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Tags come in this format. tag1 tag2 tag3 etc..
-        /// </summary>
-        private static IEnumerable<string> ParseTags(string tags)
-        {
-            if (tags == null)
-            {
-                return Enumerable.Empty<string>();
-            }
-            return tags.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
         }
     }
 }

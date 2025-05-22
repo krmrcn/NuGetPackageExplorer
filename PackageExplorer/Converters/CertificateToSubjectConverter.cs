@@ -10,19 +10,20 @@ namespace PackageExplorer
     {
         #region IValueConverter Members
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var cert = (X509Certificate2) value;
+            var cert = (X509Certificate2)value;
             if (cert == null)
+            {
                 return null;
-
+            }
 
             var dict = DistinguishedNameParser.Parse(cert.Subject);
-            string cn = null;
+            string? cn = null;
             if (dict.TryGetValue("CN", out var cns))
             {
                 // get the CN. it may be quoted
-                cn = string.Join("+", cns.Select(s => s.Replace("\"", "")));
+                cn = string.Join("+", cns.Select(s => s.Replace("\"", "", StringComparison.Ordinal)));
             }
 
             return cn;

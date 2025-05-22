@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using NuGetPe;
+
 using NuGetPackageExplorer.Types;
+
+using NuGetPe;
 
 namespace PackageExplorerViewModel
 {
-    internal class PackageSourceSettings : ISourceSettings
+    internal sealed class PackageSourceSettings : ISourceSettings
     {
         private readonly ISettingsManager _settingsManager;
 
@@ -14,22 +16,20 @@ namespace PackageExplorerViewModel
         {
             Debug.Assert(settingsManager != null);
             _settingsManager = settingsManager;
-            
+
             // migrate active package source
-            if (ActiveSource.Equals(NuGetConstants.V2FeedUrl, StringComparison.OrdinalIgnoreCase) ||
-                ActiveSource.Equals(NuGetConstants.V2LegacyFeedUrl, StringComparison.OrdinalIgnoreCase))
+            if (NuGetConstants.V2FeedUrl.Equals(ActiveSource, StringComparison.OrdinalIgnoreCase) ||
+                NuGetConstants.V2LegacyFeedUrl.Equals(ActiveSource, StringComparison.OrdinalIgnoreCase))
             {
                 ActiveSource = NuGetConstants.DefaultFeedUrl;
             }
         }
 
-        #region ISourceSettings Members
-
         public IList<string> GetSources()
         {
             var sources = _settingsManager.GetPackageSources();
 
-            
+
             // migrate nuget v1 feed to v2 feed
             for (var i = 0; i < sources.Count; i++)
             {
@@ -58,7 +58,5 @@ namespace PackageExplorerViewModel
             get { return _settingsManager.ActivePackageSource; }
             set { _settingsManager.ActivePackageSource = value; }
         }
-
-        #endregion
     }
 }

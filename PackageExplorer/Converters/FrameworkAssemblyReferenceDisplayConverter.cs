@@ -1,11 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Runtime.Versioning;
-using System.Windows;
-using System.Windows.Data;
 using NuGet.Packaging;
+
+#if HAS_UNO
+using Microsoft.UI.Xaml.Data;
+
+using _CultureInfo = System.String;
+#else
+using System.Windows.Data;
+
+using _CultureInfo = System.Globalization.CultureInfo;
+#endif
 
 namespace PackageExplorer
 {
@@ -13,21 +18,25 @@ namespace PackageExplorer
     {
         #region IValueConverter Members
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object value, Type targetType, object parameter, _CultureInfo culture)
         {
-            var far = (FrameworkAssemblyReference) value;
+            var far = (FrameworkAssemblyReference)value;
             if (far == null)
+            {
                 return null;
+            }
 
             var fxs = string.Join("; ", far.SupportedFrameworks.Select(fn => fn.DotNetFrameworkName));
 
             if (parameter as string == "includeAssembly")
+            {
                 return $"{far.AssemblyName} ({fxs})";
+            }
 
             return fxs;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, _CultureInfo culture)
         {
             throw new NotSupportedException();
         }

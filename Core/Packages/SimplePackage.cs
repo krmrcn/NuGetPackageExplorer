@@ -1,32 +1,30 @@
-﻿using NuGet.Packaging;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using NuGet.Versioning;
+
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGetPe
 {
-    internal class SimplePackage : IPackage
+    internal sealed class SimplePackage : IPackage
     {
         private readonly PackageBuilder _packageBuilder;
 
         public SimplePackage(PackageBuilder packageBuilder)
         {
-            if (packageBuilder == null)
-            {
-                throw new ArgumentNullException("packageBuilder");
-            }
+            ArgumentNullException.ThrowIfNull(packageBuilder);
 
             Id = packageBuilder.Id;
             Version = packageBuilder.Version;
             Title = packageBuilder.Title;
             Authors = packageBuilder.Authors;
             Owners = packageBuilder.Owners;
+            Icon = packageBuilder.Icon;
             IconUrl = packageBuilder.IconUrl;
+            Readme = packageBuilder.Readme;
             LicenseUrl = packageBuilder.LicenseUrl;
             ProjectUrl = packageBuilder.ProjectUrl;
             RequireLicenseAcceptance = packageBuilder.RequireLicenseAcceptance;
@@ -45,19 +43,16 @@ namespace NuGetPe
             ContentFiles = packageBuilder.ContentFiles;
             PackageTypes = packageBuilder.PackageTypes;
             MinClientVersion = packageBuilder.MinClientVersion;
-            
+            LicenseMetadata = packageBuilder.LicenseMetadata;
+            FrameworkReferenceGroups = packageBuilder.FrameworkReferenceGroups;
+
             _packageBuilder = packageBuilder;
         }
-
-        #region IPackage Members
-
-
         public IEnumerable<IPackageFile> GetFiles()
         {
             return _packageBuilder.Files.Where(p => !PackageUtility.IsManifest(p.Path));
         }
 
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         public Stream GetStream()
         {
             Stream memoryStream = new MemoryStream();
@@ -75,7 +70,11 @@ namespace NuGetPe
 
         public IEnumerable<string> Owners { get; private set; }
 
+        public string Icon { get; private set; }
+
         public Uri IconUrl { get; private set; }
+
+        public string Readme { get; private set; }
 
         public Uri LicenseUrl { get; private set; }
 
@@ -118,12 +117,12 @@ namespace NuGetPe
             }
         }
 
-        public Uri ReportAbuseUrl
+        public Uri? ReportAbuseUrl
         {
             get { return null; }
         }
 
-        public int DownloadCount
+        public long DownloadCount
         {
             get { return -1; }
         }
@@ -154,7 +153,9 @@ namespace NuGetPe
 
         public RepositoryMetadata Repository { get; private set; }
 
-        #endregion
+        public LicenseMetadata LicenseMetadata { get; private set; }
+
+        public IEnumerable<FrameworkReferenceGroup> FrameworkReferenceGroups { get; private set; }
 
         public void Dispose()
         {

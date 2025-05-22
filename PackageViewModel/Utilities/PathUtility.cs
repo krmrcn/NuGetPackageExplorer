@@ -26,11 +26,9 @@ namespace PackageExplorerViewModel
         /// <exception cref="ArgumentNullException"></exception>
         public static string RelativePathTo(string fromDirectory, string toPath)
         {
-            if (fromDirectory == null)
-                throw new ArgumentNullException("fromDirectory");
+            ArgumentNullException.ThrowIfNull(fromDirectory);
 
-            if (toPath == null)
-                throw new ArgumentNullException("toPath");
+            ArgumentNullException.ThrowIfNull(toPath);
 
             var isRooted = Path.IsPathRooted(fromDirectory)
                 && Path.IsPathRooted(toPath);
@@ -42,7 +40,9 @@ namespace PackageExplorerViewModel
                     Path.GetPathRoot(toPath), StringComparison.OrdinalIgnoreCase);
 
                 if (isDifferentRoot)
+                {
                     return toPath;
+                }
             }
 
             var relativePath = new StringCollection();
@@ -62,22 +62,32 @@ namespace PackageExplorerViewModel
             for (var x = 0; x < length; x++)
             {
                 if (!string.Equals(fromDirectories[x], toDirectories[x], StringComparison.OrdinalIgnoreCase))
+                {
                     break;
+                }
 
                 lastCommonRoot = x;
             }
 
             if (lastCommonRoot == -1)
+            {
                 return toPath;
+            }
 
             // add relative folders in from path
             for (var x = lastCommonRoot + 1; x < fromDirectories.Length; x++)
+            {
                 if (fromDirectories[x].Length > 0)
+                {
                     relativePath.Add("..");
+                }
+            }
 
             // add to folders to path
             for (var x = lastCommonRoot + 1; x < toDirectories.Length; x++)
+            {
                 relativePath.Add(toDirectories[x]);
+            }
 
             // create relative path
             var relativeParts = new string[relativePath.Count];

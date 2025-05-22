@@ -1,33 +1,52 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+
+using NuGetPackageExplorer.Types;
+
+using NuGetPe;
+
+#if HAS_UNO || USE_WINUI
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Imaging;
+#else
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
-using NuGetPackageExplorer.Types;
+#endif
 
 namespace PackageExplorer
 {
     [PackageContentViewerMetadata(99, ".jpg", ".gif", ".png", ".tif", ".bmp", ".ico")]
-    internal class ImageFileViewer : IPackageContentViewer
+    internal sealed class ImageFileViewer : IPackageContentViewer
     {
-        #region IPackageContentViewer Members
-
-        public object GetView(string extension, Stream stream)
+        public object GetView(IPackageContent selectedFile, IReadOnlyList<IPackageContent> peerFiles)
         {
-            stream = StreamUtility.MakeSeekable(stream);
+            DiagnosticsClient.TrackEvent("ImageFileViewer");
 
+            using var stream = StreamUtility.MakeSeekable(selectedFile.GetStream(), true);
             var source = new BitmapImage();
+#if HAS_UNO || USE_WINUI
+            source.SetSource(stream.AsRandomAccessStream());
+#else
             source.BeginInit();
             source.CacheOption = BitmapCacheOption.OnLoad;
             source.StreamSource = stream;
             source.EndInit();
+#endif
 
-            return new Image
+            var image = new Image
             {
                 Source = source,
+#if !HAS_UNO && !USE_WINUI
                 Width = source.Width,
-                Height = source.Height
+                Height = source.Height,
+#endif
+            };
+
+            return new ScrollViewer
+            {
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                Content = image
             };
         }
-
-        #endregion
     }
 }

@@ -1,28 +1,69 @@
 <Project>
 
   <PropertyGroup>
-    <Authors>Luan Nguyen,Julian Verdurmen,Oren Novotny</Authors>
+    <Authors>Luan Nguyen,Julian Verdurmen,Claire Novotny</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <NoPackageAnalysis>true</NoPackageAnalysis>
-    <PackageIconUrl>https://raw.githubusercontent.com/NuGetPackageExplorer/NuGetPackageExplorer/master/images/nuget.png</PackageIconUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/NuGetPackageExplorer/NuGetPackageExplorer/main/images/nuget.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/NuGetPackageExplorer/NuGetPackageExplorer</PackageProjectUrl>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/NuGetPackageExplorer/NuGetPackageExplorer/master/LICENSE</PackageLicenseUrl>
-    <Copyright></Copyright>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/NuGetPackageExplorer/NuGetPackageExplorer/main/LICENSE</PackageLicenseUrl>
+    <Copyright>© 2025 .NET Foundation and Contributors</Copyright>
     <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)NuGetPackageExplorer.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisDictionary>$(MSBuildThisFileDirectory)CodeAnalysisDictionary.xml</CodeAnalysisDictionary>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DefaultLanguage>en-US</DefaultLanguage>
-    <NoWarn>1701;1702;1705;1591</NoWarn>
+    <NoWarn>1701;1702;1705;1591;NU1701;NU1510;CA1014;CA1002</NoWarn>
 
     <IsTypesProject>$(MSBuildProjectName.Contains('Types'))</IsTypesProject>
     <IsLegacyProject>$(MSBuildProjectName.Equals('PackageExplorer'))</IsLegacyProject>
     <IsPackageProject>$(MSBuildProjectName.Contains('.Package'))</IsPackageProject>
-    <DebugType>Full</DebugType>
+    <DebugType>embedded</DebugType>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>    
+
+    <!-- This suppresses the warning we get because of defining UseWpf/UseWindowsForms where it doesn't
+         apply to all of our projects -->
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);NETSDK1107</MSBuildWarningsAsMessages>    
+    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Nerdbank.GitVersioning" Version="2.1.23" PrivateAssets="all" />
+  <PropertyGroup>
+    <UseArtifactsOutput>true</UseArtifactsOutput>
+    
+    
+  </PropertyGroup>
+  
+
+  <PropertyGroup Condition="'$(TF_BUILD)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SourceRootDir>$(MSBuildThisFileDirectory)</SourceRootDir>
+  </PropertyGroup>
+
+  <ItemGroup>    
     <Compile Include="$(MSBuildThisFileDirectory)Common\CommonAssemblyInfo.cs" LinkBase="Properties" />
   </ItemGroup>
+  
+  <PropertyGroup>
+    <ReleaseChannel Condition="'$(ReleaseChannel)' == '' ">Debug</ReleaseChannel>
+  </PropertyGroup> 
+  
+  <PropertyGroup>
+    <DefineConstants Condition="'$(ReleaseChannel)' == 'Store' ">$(DefineConstants);STORE</DefineConstants>
+    <DefineConstants Condition="'$(ReleaseChannel)' == 'Nightly' ">$(DefineConstants);NIGHTLY</DefineConstants>
+    <DefineConstants Condition="'$(ReleaseChannel)' == 'Choco' ">$(DefineConstants);CHOCO</DefineConstants>        
+    <DefineConstants Condition="'$(ReleaseChannel)' == 'Release' ">$(DefineConstants);ZIP</DefineConstants>    
+    <DefineConstants Condition="'$(ReleaseChannel)' == 'Debug' ">$(DefineConstants);ZIP</DefineConstants>    
+  </PropertyGroup>
 
 </Project>

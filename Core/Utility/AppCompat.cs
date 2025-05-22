@@ -1,15 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+
+[assembly: DefaultDllImportSearchPaths(DllImportSearchPath.SafeDirectories)]
 
 namespace NuGetPe
 {
     public static class AppCompat
     {
-        private static readonly Lazy<bool> isWindows10S;
+#pragma warning disable IDE1006 // Naming Styles
+        private static readonly Lazy<bool> isWindows10S = new Lazy<bool>(() => IsWindows && GetIsWin10S());
+#pragma warning restore IDE1006 // Naming Styles
+
         public static bool IsWindows10S => isWindows10S.Value;
         public static bool IsWindows11S => isWindows10S.Value;
         public static bool IsWindows12S => isWindows10S.Value;
@@ -17,11 +18,34 @@ namespace NuGetPe
         public static bool Testing1 => isWindows10S.Value;
         public static bool Testing2 => isWindows10S.Value;
 
-        static AppCompat()
+        public static bool IsWasm => RuntimeInformation.OSArchitecture ==
+#if NET5_0_OR_GREATER
+            Architecture.Wasm;
+#else
+            (Architecture)4; // Architecture.Wasm definition is missing under NETSTANDARD2_1 & NETCOREAPP3_1
+#endif
+
+        public static bool IsWindows => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
+        public static bool IsSupported(params RuntimeFeature[] features) => features.All(IsSupported);
+        public static bool IsSupported(RuntimeFeature feature)
         {
-            isWindows10S = new Lazy<bool>(GetIsWin10S);
+            return feature switch
+            {
+                // Under Wasm (net7), the following is not supported
+                // PrimarySignature.Load failed System.TypeInitializationException: TypeInitialization_Type, System.Security.Cryptography.Pkcs.SubjectIdentifier
+                // dotnet.js:14--->System.TypeInitializationException: TypeInitialization_Type, System.Security.Cryptography.X509Certificates.X509Pal
+                // dotnet.js:14--->System.PlatformNotSupportedException: SystemSecurityCryptographyX509Certificates_PlatformNotSupported
+                // dotnet.js:14    at System.Security.Cryptography.X509Certificates.X509Pal.BuildSingleton() in runtime\src\libraries\System.Security.Cryptography\src\System\Security\Cryptography\X509Certificates\X509Pal.NotSupported.cs:line 10
+                RuntimeFeature.Cryptography => !IsWasm,
+                RuntimeFeature.NativeMethods => IsWindows,
+                RuntimeFeature.DiaSymReader => IsWindows,
+
+                _ => throw new ArgumentOutOfRangeException($"Unknown feature flag: {feature}")
+            };
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)] // We need this to be a method call so the dll isn't attempted to be loaded
         private static bool GetIsWin10S()
         {
             GetProductInfo(
@@ -51,5 +75,15 @@ namespace NuGetPe
             int dwSpMajorVersion,
             int dwSpMinorVersion,
             out int pdwReturnedProductType);
+    }
+
+    public enum RuntimeFeature
+    {
+        /// <summary>
+        /// affects: X509, Oid, Pkcs, SignedCms
+        /// </summary>
+        Cryptography,
+        NativeMethods,
+        DiaSymReader,
     }
 }

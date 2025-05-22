@@ -1,5 +1,4 @@
 ﻿using NuGet.Packaging;
-using NuGetPe;
 
 namespace PackageExplorerViewModel
 {
@@ -8,6 +7,6 @@ namespace PackageExplorerViewModel
         string Name { get; }
         bool Save(string editedFilePath);
 
-        string OriginalPath { get; }
+        string? OriginalPath { get; }
     }
 }

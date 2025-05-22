@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+
 using ComIDataObject = System.Runtime.InteropServices.ComTypes.IDataObject;
 using WindowsIDataObject = System.Windows.IDataObject;
 
@@ -13,8 +14,8 @@ namespace PackageExplorer
     // code taken from http://dlaa.me/blog/post/9917797
     internal static class NativeDragDrop
     {
-        public static readonly string FileGroupDescriptorW = "FileGroupDescriptorW";
-        public static readonly string FileContents = "FileContents";
+        public const string FileGroupDescriptorW = "FileGroupDescriptorW";
+        public const string FileContents = "FileContents";
 
         public static Stream CreateFileGroupDescriptorW(string fileName, DateTimeOffset lastWriteTime, long? fileSize)
         {
@@ -22,7 +23,7 @@ namespace PackageExplorer
             var fileDescriptor = new FILEDESCRIPTORW() { cFileName = fileName };
             fileDescriptor.dwFlags |= FD_SHOWPROGRESSUI;
 
-            if (lastWriteTime != default(DateTimeOffset))
+            if (lastWriteTime != default)
             {
                 fileDescriptor.dwFlags |= FD_CREATETIME | FD_WRITESTIME;
                 var changeTime = lastWriteTime.ToFileTime();
@@ -38,8 +39,9 @@ namespace PackageExplorer
             if (fileSize.HasValue)
             {
                 fileDescriptor.dwFlags |= FD_FILESIZE;
-                fileDescriptor.nFileSizeLow = (uint)(fileSize & 0xffffffff);
-                fileDescriptor.nFileSizeHigh = (uint)(fileSize >> 32);
+                // TODO: remove ! once https://github.com/dotnet/roslyn/issues/33330 is fixed
+                fileDescriptor.nFileSizeLow = (uint)(fileSize & 0xffffffff)!;
+                fileDescriptor.nFileSizeHigh = (uint)(fileSize >> 32)!;
             }
 
             var fileGroupDescriptorBytes = StructureBytes(fileGroupDescriptor);
@@ -69,15 +71,18 @@ namespace PackageExplorer
             return bytes;
         }
 
-        public static IEnumerable<(string FilePath, Stream Stream)> GetFileGroupDescriptorW(WindowsIDataObject windowsDataObject)
+        public static IEnumerable<(string FilePath, Stream? Stream)> GetFileGroupDescriptorW(WindowsIDataObject windowsDataObject)
         {
-            if (!(windowsDataObject is ComIDataObject)) yield break;
+            if (!(windowsDataObject is ComIDataObject))
+            {
+                yield break;
+            }
 
             var fileNames = GetFileGroupDescriptorWFileNames(windowsDataObject);
 
             for (var i = 0; i < fileNames.Length; i++)
             {
-                Stream stream = null;
+                Stream? stream = null;
                 if (!fileNames[i].IsDirectory)
                 {
                     stream = GetStream(windowsDataObject, i);
@@ -96,7 +101,7 @@ namespace PackageExplorer
             ref var fileGroupDescriptorPtr = ref MemoryMarshal.GetReference(fileGroupDescriptorBytes);
             var fileGroupDescriptor = Unsafe.As<byte, FILEGROUPDESCRIPTORW>(ref fileGroupDescriptorPtr);
 
-            var fileNames = new(string, bool)[fileGroupDescriptor.cItems];
+            var fileNames = new (string, bool)[fileGroupDescriptor.cItems];
             unsafe
             {
                 fixed (byte* pStart = &Unsafe.Add(ref fileGroupDescriptorPtr, Marshal.SizeOf<FILEGROUPDESCRIPTORW>()))
@@ -125,15 +130,17 @@ namespace PackageExplorer
         }
 
         // https://stackoverflow.com/questions/8709076/drag-and-drop-multiple-attached-file-from-outlook-to-c-sharp-window-form
-        private static Stream GetStream(WindowsIDataObject windowsObjectData, int index)
+        private static Stream? GetStream(WindowsIDataObject windowsObjectData, int index)
         {
             //create a FORMATETC struct to request the data with
-            var formatetc = new FORMATETC();
-            formatetc.cfFormat = (short)System.Windows.DataFormats.GetDataFormat(FileContents).Id;
-            formatetc.dwAspect = DVASPECT.DVASPECT_CONTENT;
-            formatetc.lindex = index;
-            formatetc.ptd = IntPtr.Zero;
-            formatetc.tymed = TYMED.TYMED_ISTREAM | TYMED.TYMED_HGLOBAL;
+            var formatetc = new FORMATETC
+            {
+                cfFormat = (short)System.Windows.DataFormats.GetDataFormat(FileContents).Id,
+                dwAspect = DVASPECT.DVASPECT_CONTENT,
+                lindex = index,
+                ptd = IntPtr.Zero,
+                tymed = TYMED.TYMED_ISTREAM | TYMED.TYMED_HGLOBAL
+            };
 
             try
             {
@@ -174,7 +181,7 @@ namespace PackageExplorer
             return null;
         }
 
-        private class IStreamWrapper : Stream
+        private sealed class IStreamWrapper : Stream
         {
             private readonly IStream _inner;
             private System.Runtime.InteropServices.ComTypes.STATSTG? _stats;
@@ -194,8 +201,7 @@ namespace PackageExplorer
             {
                 if (_stats == null)
                 {
-                    var stats = new System.Runtime.InteropServices.ComTypes.STATSTG();
-                    _inner.Stat(out stats, 0);
+                    _inner.Stat(out var stats, 0);
 
                     _stats = stats;
                 }
@@ -212,8 +218,8 @@ namespace PackageExplorer
 
             public override long Position
             {
-                get => throw new NotImplementedException();
-                set => throw new NotImplementedException();
+                get;
+                set;
             }
 
             public override void Flush()
@@ -233,6 +239,8 @@ namespace PackageExplorer
 
                 _inner.Read(buffer, count, (IntPtr)p);
 
+                Position += count;
+
                 return (int)lng;
             }
 
@@ -242,6 +250,8 @@ namespace PackageExplorer
                 var p = &lng;
 
                 _inner.Seek(offset, (int)origin, (IntPtr)p);
+
+                Position = offset + (int)origin;
 
                 return lng;
             }
@@ -264,10 +274,14 @@ namespace PackageExplorer
                 _inner.Write(buffer, count, (IntPtr)p);
 
                 var written = (int)result;
+
+                Position += written;
+
                 if (written != count)
                 {
                     Write(buffer, written, count - written);
                 }
+
             }
 
             protected override void Dispose(bool disposing)
@@ -288,6 +302,7 @@ namespace PackageExplorer
         // https://msdn.microsoft.com/en-us/library/windows/desktop/gg258117(v=vs.85).aspx
         private const int FILE_ATTRIBUTE_DIRECTORY = 0x10;
 
+#pragma warning disable IDE1006 // Naming Styles
         // https://msdn.microsoft.com/en-us/library/windows/desktop/bb773290(v=vs.85).aspx
         [StructLayout(LayoutKind.Sequential)]
         private struct FILEGROUPDESCRIPTORW
@@ -315,5 +330,6 @@ namespace PackageExplorer
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
             public string cFileName;
         }
+#pragma warning restore IDE1006 // Naming Styles
     }
 }

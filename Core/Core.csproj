@@ -1,20 +1,30 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);net9.0-windows10.0.26100</TargetFrameworks>
     <RootNamespace>NuGetPe</RootNamespace>
     <Description>Core library which is responsible for loading .nupkg files and parsing .nuspec files.</Description>
     <Title>NuGet Package Explorer Core</Title>
+    <AssemblyName>NuGetPackageExplorer.Core</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="NuGetResources.resx" Generator="ResXFileCodeGenerator" LastGenOutput="NuGetResources.Designer.cs" CustomToolNamespace="NuGetPe.Resources" />
-    <Compile Update="NuGetResources.Designer.cs" DesignTime="True" AutoGen="True" DependentUpon="NuGetResources.resx" />
+    <ProjectReference Include="..\NuGetPeGenerators\NuGetPeGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="False" />
+    <AdditionalFiles Include="**\*.resx" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Types\Types.csproj" />
-    <PackageReference Include="System.Reflection.Metadata" Version="1.6.0" />
+    <PackageReference Include="AppInsights.WindowsDesktop" />
+    <PackageReference Include="Microsoft.DiaSymReader.Converter"  />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" />
+    <PackageReference Include="Microsoft.SymbolStore" />
+    <PackageReference Include="NuGet.Protocol" />
+    <PackageReference Include="PeNet" />
+    <PackageReference Include="System.Formats.Asn1" />
+    <PackageReference Include="System.Reflection.Metadata" />
+    <PackageReference Condition="$(TargetFramework.Contains('-windows'))" Include="OSVersionHelper" />
   </ItemGroup>
-  
+
 </Project>

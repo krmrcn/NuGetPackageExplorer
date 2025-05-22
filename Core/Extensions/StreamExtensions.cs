@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Text;
 
 namespace NuGetPe
@@ -7,18 +7,17 @@ namespace NuGetPe
     {
         public static byte[] ReadAllBytes(this Stream stream)
         {
-            var length = (int) stream.Length;
+            System.ArgumentNullException.ThrowIfNull(stream);
+            var length = (int)stream.Length;
             var buffer = new byte[length];
-            stream.Read(buffer, 0, length);
+            stream.ReadExactly(buffer, 0, length);
             return buffer;
         }
 
         public static string ReadToEnd(this Stream stream)
         {
-            using (var streamReader = new StreamReader(stream))
-            {
-                return streamReader.ReadToEnd();
-            }
+            using var streamReader = new StreamReader(stream);
+            return streamReader.ReadToEnd();
         }
 
         public static Stream AsStream(this string value)
@@ -28,6 +27,7 @@ namespace NuGetPe
 
         public static Stream AsStream(this string value, Encoding encoding)
         {
+            System.ArgumentNullException.ThrowIfNull(encoding);
             return new MemoryStream(encoding.GetBytes(value));
         }
     }

@@ -1,17 +1,32 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworks>net9.0</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);net9.0-windows10.0.26100</TargetFrameworks>
     <Description>Contains ViewModel classes for the main application.</Description>
     <RootNamespace>PackageExplorerViewModel</RootNamespace>
-    <EmbeddedResourceGeneratorVisibilityIsInternal>false</EmbeddedResourceGeneratorVisibilityIsInternal>
+    <AssemblyName>NuGetPackageExplorer.PackageViewModel</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NuGet.Credentials" Version="4.7.0" />
-    <PackageReference Include="NuGet.PackageManagement" Version="4.7.0" />
+    <PackageReference Include="AuthenticodeExaminer" />
+    <PackageReference Include="NuGet.Credentials" />
+    <PackageReference Include="NuGet.PackageManagement" />    
+    <PackageReference Include="NuGet.Commands" />
+    <PackageReference Include="NuGet.Resolver" />
+    <PackageReference Include="System.Windows.Extensions" />
     <ProjectReference Include="..\Core\Core.csproj" />
-    <Reference Include="System.ComponentModel.Composition" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NuGetPeGenerators\NuGetPeGenerators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="False" />
+    <AdditionalFiles Include="**\*.resx" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='net9.0'">
+    <PackageReference Remove="System.Windows.Extensions" />
   </ItemGroup>
 
 </Project>

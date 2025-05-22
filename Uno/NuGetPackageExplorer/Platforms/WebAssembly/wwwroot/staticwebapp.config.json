@@ -1,0 +1,80 @@
+{
+  "platform": {
+    "apiRuntime": "dotnet-isolated:8.0"
+  },
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": [
+      "/_framework/*",
+      "/package_*",
+      "*.{css,js}",
+      "*.{png}",
+      "*.{c,h,wasm,clr,pdb,dat,txt}"
+    ]
+  },
+  "mimeTypes": {
+    ".map": "application/json"
+  },
+  "routes": [
+    {
+      "route": "/_framework/blazor.boot.*",
+      "headers": {
+        "cache-control": "no-cache, must-revalidate"
+      }
+    },
+    {
+      "route": "/_framework/dotnet.js",
+      "headers": {
+        "cache-control": "no-cache, must-revalidate"
+      }
+    },
+    {
+      "route": "/_framework/dotnet.js.*",
+      "headers": {
+        "cache-control": "no-cache, must-revalidate"
+      }
+    },
+    {
+      "route": "/_framework/dotnet.runtime.js.*",
+      "headers": {
+        "cache-control": "no-cache, must-revalidate"
+      }
+    },
+    {
+      "route": "/_framework/*",
+      "headers": {
+        "cache-control": "public, immutable, max-age=31536000"
+      }
+    },
+    {
+      "route": "/package_*",
+      "headers": {
+        "cache-control": "public, immutable, max-age=31536000"
+      }
+    },
+    {
+      "route": "/service-worker.*",
+      "headers": {
+        "cache-control": "no-cache, must-revalidate"
+      }
+    },
+    {
+      "route": "/index.*",
+      "headers": {
+        "cache-control": "no-cache, must-revalidate"
+      }
+    },
+    {
+      "route": "/manifest.*",
+      "headers": {
+        "cache-control": "no-cache, must-revalidate"
+      }
+    },
+    {
+      "route": "/*",
+      "headers": {
+        "cache-control": "must-revalidate, max-age=3600"
+      }
+    }
+  ]
+}

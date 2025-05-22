@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
 using System.Globalization;
-using NuGetPe;
-using NuGetPackageExplorer.Types;
+using System.Linq;
+
 using NuGet.Packaging.Core;
+
+using NuGetPackageExplorer.Types;
+
+using NuGetPe;
 
 namespace PackageExplorerViewModel.Rules
 {
     [Export(typeof(IPackageRule))]
-    internal class PrereleasePackageDependencyRule : IPackageRule
+    internal sealed class PrereleasePackageDependencyRule : IPackageRule
     {
         #region IPackageRule Members
 
@@ -18,7 +21,7 @@ namespace PackageExplorerViewModel.Rules
         {
             if (package.Version.IsPrerelease)
             {
-                return new PackageIssue[0];
+                return Array.Empty<PackageIssue>();
             }
 
             return package.DependencyGroups.SelectMany(p => p.Packages)
@@ -37,7 +40,7 @@ namespace PackageExplorerViewModel.Rules
 
             return pd.VersionRange.MinVersion?.IsPrerelease == true || pd.VersionRange.MaxVersion?.IsPrerelease == true;
         }
-        
+
         private static PackageIssue CreatePackageIssue(PackageDependency target)
         {
             return new PackageIssue(

@@ -4,7 +4,7 @@ namespace NuGetPe
 {
     public interface IServerPackageMetadata
     {
-        Uri ReportAbuseUrl { get; }
-        int DownloadCount { get; }
+        Uri? ReportAbuseUrl { get; }
+        long DownloadCount { get; }
     }
 }

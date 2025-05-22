@@ -1,20 +1,19 @@
 ﻿using System;
-using System.Linq;
 using System.ComponentModel;
 using System.Diagnostics;
-using NuGetPe;
+using System.Linq;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
-using NuGet.Packaging;
 
 namespace PackageExplorerViewModel
 {
     public class EditablePackageDependency : INotifyPropertyChanged, IDataErrorInfo
     {
-        private string _id;
-        private string _exclude;
-        private VersionRange _versionSpec;
-        private Func<EditablePackageDependencySet> _getActiveDependencySet;
+        private string? _id;
+        private string? _exclude;
+        private VersionRange? _versionSpec;
+        private readonly Func<EditablePackageDependencySet> _getActiveDependencySet;
 
         public EditablePackageDependency(Func<EditablePackageDependencySet> getActiveDependencySet)
         {
@@ -22,7 +21,7 @@ namespace PackageExplorerViewModel
             _getActiveDependencySet = getActiveDependencySet;
         }
 
-        public string Id
+        public string? Id
         {
             get { return _id; }
             set
@@ -30,12 +29,12 @@ namespace PackageExplorerViewModel
                 if (_id != value)
                 {
                     _id = value;
-                    RaisePropertyChange("Id");
+                    RaisePropertyChange(nameof(Id));
                 }
             }
         }
 
-        public VersionRange VersionSpec
+        public VersionRange? VersionSpec
         {
             get { return _versionSpec; }
             set
@@ -43,12 +42,12 @@ namespace PackageExplorerViewModel
                 if (_versionSpec != value)
                 {
                     _versionSpec = value;
-                    RaisePropertyChange("VersionSpec");
+                    RaisePropertyChange(nameof(VersionSpec));
                 }
             }
         }
 
-        public string Exclude
+        public string? Exclude
         {
             get { return _exclude; }
             set
@@ -56,43 +55,32 @@ namespace PackageExplorerViewModel
                 if (_exclude != value)
                 {
                     _exclude = value;
-                    RaisePropertyChange("Exclude");
+                    RaisePropertyChange(nameof(Exclude));
                 }
             }
         }
 
-        #region IDataErrorInfo Members
+        public string? Error => null;
 
-        public string Error
-        {
-            get { return null; }
-        }
-
-        public string this[string columnName]
+        public string? this[string columnName]
         {
             get { return IsValid(columnName); }
         }
 
-        #endregion
-
-        #region INotifyPropertyChanged Members
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        #endregion
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         private void RaisePropertyChange(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private string IsValid(string columnName)
+        private string? IsValid(string columnName)
         {
             if (columnName == "Id")
             {
                 if (string.IsNullOrEmpty(Id))
                 {
-                    return VersionSpec != null ? "Package id must not be empty." : (string)null;
+                    return VersionSpec != null ? "Package id must not be empty." : null;
                 }
 
                 if (!PackageIdValidator.IsValidPackageId(Id))

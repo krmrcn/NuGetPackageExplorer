@@ -1,32 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using NuGet.Common;
-using NuGet.Packaging;
+﻿using NuGet.Common;
 using NuGet.Packaging.Signing;
 
 
 namespace PackageExplorerViewModel
 {
-    public sealed class ValidationResultViewModel : INotifyPropertyChanged
+    public sealed class ValidationResultViewModel
     {
-        private readonly VerifySignaturesResult verifySignaturesResult;
+        private readonly VerifySignaturesResult _verifySignaturesResult;
 
         public ValidationResultViewModel(VerifySignaturesResult verifySignaturesResult)
         {
-            this.verifySignaturesResult = verifySignaturesResult ?? throw new ArgumentNullException(nameof(verifySignaturesResult));
+            _verifySignaturesResult = verifySignaturesResult ?? throw new ArgumentNullException(nameof(verifySignaturesResult));
 
             Trust = verifySignaturesResult.Results.Select(r => r.Trust).Min();
 
             ErrorIssues = verifySignaturesResult.Results.SelectMany(prv => prv.GetErrorIssues()).ToList();
             WarningIssues = verifySignaturesResult.Results.SelectMany(prv => prv.GetWarningIssues()).ToList();
-            InformationIssues = verifySignaturesResult.Results.SelectMany(prv => prv.Issues).Where(sl => sl.Level == LogLevel.Information).Select(sl => sl.ToLogMessage()).ToList();
+            InformationIssues = verifySignaturesResult.Results
+                                                      .SelectMany(prv => prv.Issues)
+                                                      .Where(sl => sl.Level == LogLevel.Information)
+                                                      .ToList();
         }
 
 
-        public bool Valid => verifySignaturesResult.Valid;
+        public bool Valid => _verifySignaturesResult.IsValid;
+#pragma warning disable CA1720 // Identifier contains type name
+        public bool Signed => _verifySignaturesResult.IsSigned;
+#pragma warning restore CA1720 // Identifier contains type name
 
 
         public IReadOnlyList<ILogMessage> ErrorIssues { get; }
@@ -34,13 +34,5 @@ namespace PackageExplorerViewModel
         public IReadOnlyList<ILogMessage> InformationIssues { get; }
 
         public SignatureVerificationStatus Trust { get; }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        
-        private void RaisePropertyChange(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
     }
 }

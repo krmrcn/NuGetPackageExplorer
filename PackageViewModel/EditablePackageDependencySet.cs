@@ -1,16 +1,14 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Runtime.Versioning;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGetPe;
 
 namespace PackageExplorerViewModel
 {
     public class EditablePackageDependencySet : INotifyPropertyChanged
     {
-        private NuGetFramework _targetFramework;
+        private NuGetFramework? _targetFramework;
 
         public EditablePackageDependencySet()
         {
@@ -19,11 +17,12 @@ namespace PackageExplorerViewModel
 
         public EditablePackageDependencySet(PackageDependencyGroup packageDependencySet)
         {
+            System.ArgumentNullException.ThrowIfNull(packageDependencySet);
             _targetFramework = packageDependencySet.TargetFramework;
             Dependencies = new ObservableCollection<PackageDependency>(packageDependencySet.Packages);
         }
 
-        public NuGetFramework TargetFramework
+        public NuGetFramework? TargetFramework
         {
             get
             {
@@ -34,21 +33,22 @@ namespace PackageExplorerViewModel
                 if (_targetFramework != value)
                 {
                     _targetFramework = value;
-                    OnPropertyChange("TargetFramework");
+                    OnPropertyChange(nameof(TargetFramework));
                 }
             }
         }
 
         public ObservableCollection<PackageDependency> Dependencies
         {
-            get; }
+            get;
+        }
 
         public PackageDependencyGroup AsReadOnly()
         {
             return new PackageDependencyGroup(TargetFramework ?? NuGetFramework.AnyFramework, Dependencies);
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         private void OnPropertyChange(string propertyName)
         {

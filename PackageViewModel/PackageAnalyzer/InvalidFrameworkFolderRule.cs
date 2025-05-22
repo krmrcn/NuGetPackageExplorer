@@ -3,15 +3,17 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
+
 using NuGet.Frameworks;
-using NuGetPe;
+
 using NuGetPackageExplorer.Types;
-using NuGet.Packaging;
+
+using NuGetPe;
 
 namespace PackageExplorerViewModel.Rules
 {
     [Export(typeof(IPackageRule))]
-    internal class InvalidFrameworkFolderRule : IPackageRule
+    internal sealed class InvalidFrameworkFolderRule : IPackageRule
     {
         #region IPackageRule Members
 

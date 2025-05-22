@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.IO;
 using System.Linq;
-using NuGetPe;
+
 using NuGetPackageExplorer.Types;
-using NuGet.Packaging;
+
+using NuGetPe;
 
 namespace PackageExplorerViewModel.Rules
 {
     [Export(typeof(IPackageRule))]
-    internal class MisplacedAssemblyRule : IPackageRule
+    internal sealed class MisplacedAssemblyRule : IPackageRule
     {
-        private static readonly HashSet<string> assemblyFolders = new HashSet<string>(new[]{"lib", "analyzers", "build", "ref", "tools" }, StringComparer.OrdinalIgnoreCase);
+        private static readonly HashSet<string> AssemblyFolders = new(["lib", "analyzers", "build", "ref", "tools"], StringComparer.OrdinalIgnoreCase);
 
         #region IPackageRule Members
 
@@ -23,17 +23,17 @@ namespace PackageExplorerViewModel.Rules
                 var path = file.Path;
                 var segments = path.Split('\\');
                 var directory = segments.First();
-                
+
                 // if under 'folder' directly
-                if(assemblyFolders.Contains(directory))
+                if (AssemblyFolders.Contains(directory))
                 {
                     // file under the directory. Tools can do anything
-                    if (segments.Length == 2 && FileHelper.IsAssembly(path) && !"tools".Equals(directory, StringComparison.OrdinalIgnoreCase)) 
+                    if (segments.Length == 2 && FileHelper.IsAssembly(path) && !"tools".Equals(directory, StringComparison.OrdinalIgnoreCase))
                     {
                         yield return CreatePackageIssueForAssembliesUnderLib(path, directory);
                     }
                 }
-                else 
+                else
                 {
                     // when checking for assemblies outside known folders, only check .dll files.
                     // .exe files are often legitimate outside 'lib'.
@@ -43,7 +43,7 @@ namespace PackageExplorerViewModel.Rules
                         yield return CreatePackageIssueForAssembliesOutsideLib(path, directory);
                     }
                 }
-                
+
             }
         }
 
@@ -55,7 +55,7 @@ namespace PackageExplorerViewModel.Rules
                 PackageIssueLevel.Warning,
                 "Assembly not inside a framework folder",
                 "The assembly '" + target +
-                $"' is placed directly under '{folder}' folder. It is recommended that assemblies be placed inside a framework-specific folder.",
+                $"' is placed directly under the '{folder}' folder. It is recommended that assemblies be placed inside a framework-specific folder.",
                 "Move it into a framework-specific folder. If this assembly is targeted for multiple frameworks, ignore this warning."
                 );
         }
@@ -66,8 +66,8 @@ namespace PackageExplorerViewModel.Rules
                 PackageIssueLevel.Warning,
                 "Assembly outside known folders",
                 "The assembly '" + target +
-                $"' is not inside the '{folder}' folder and hence it won't be used when the package is installed into a project",
-                "Move it into a known folder folder."
+                $"' is inside the '{folder}' folder and hence it won't be used when the package is installed into a project.",
+                "Move it into a known folder."
                 );
         }
     }

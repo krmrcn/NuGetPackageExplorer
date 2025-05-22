@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
-using NuGetPe;
+
 using NuGetPackageExplorer.Types;
-using NuGet.Packaging;
+
+using NuGetPe;
 
 namespace PackageExplorerViewModel.Rules
 {
     [Export(typeof(IPackageRule))]
-    internal class MisplacedScriptFileRule : IPackageRule
+    internal sealed class MisplacedScriptFileRule : IPackageRule
     {
         private const string ToolsFolder = "tools";
         private const string ScriptExtension = ".ps1";
@@ -34,10 +35,10 @@ namespace PackageExplorerViewModel.Rules
                 {
                     var directory = Path.GetDirectoryName(path);
                     var name = Path.GetFileNameWithoutExtension(path);
-                    if (!directory.Equals(ToolsFolder, StringComparison.OrdinalIgnoreCase) ||
-                        !name.Equals("install", StringComparison.OrdinalIgnoreCase) &&
-                        !name.Equals("uninstall", StringComparison.OrdinalIgnoreCase) &&
-                        !name.Equals("init", StringComparison.OrdinalIgnoreCase))
+                    if (!ToolsFolder.Equals(directory, StringComparison.OrdinalIgnoreCase) ||
+                        !"install".Equals(name, StringComparison.OrdinalIgnoreCase) &&
+                        !"uninstall".Equals(name, StringComparison.OrdinalIgnoreCase) &&
+                        !"init".Equals(name, StringComparison.OrdinalIgnoreCase))
                     {
                         yield return CreatePackageIssueForUnrecognizedScripts(path);
                     }

@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
-using NuGetPe;
+
 using NuGetPackageExplorer.Types;
+
+using NuGetPe;
 
 namespace PackageExplorerViewModel.Rules
 {
     [Export(typeof(IPackageRule))]
-    internal class OrphanAssemblyReferenceNameRule : IPackageRule
+    internal sealed class OrphanAssemblyReferenceNameRule : IPackageRule
     {
         #region IPackageRule Members
 
@@ -18,13 +20,13 @@ namespace PackageExplorerViewModel.Rules
             if (package.PackageAssemblyReferences.Any())
             {
                 var allLibFiles = package.GetFilesInFolder("lib").Select(Path.GetFileName);
-                var libFilesSet = new HashSet<string>(allLibFiles, StringComparer.OrdinalIgnoreCase);
+                var libFilesSet = new HashSet<string>(allLibFiles!, StringComparer.OrdinalIgnoreCase);
 
                 return from reference in package.PackageAssemblyReferences.SelectMany(set => set.References)
                        where !libFilesSet.Contains(reference)
                        select CreateIssue(reference);
             }
-            return new PackageIssue[0];
+            return Array.Empty<PackageIssue>();
         }
 
         #endregion

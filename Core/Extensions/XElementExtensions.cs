@@ -11,13 +11,15 @@ namespace NuGetPe
     {
         [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters",
             Justification = "We don't care about base types")]
-        public static string GetOptionalAttributeValue(this XElement element, string localName,
-                                                       string namespaceName = null)
+        public static string? GetOptionalAttributeValue(this XElement element, string localName,
+                                                       string? namespaceName = null)
         {
-            XAttribute attr;
+            ArgumentNullException.ThrowIfNull(element);
+
+            XAttribute? attr;
             if (string.IsNullOrEmpty(namespaceName))
             {
-                attr = element.Attribute(localName);
+                attr = element.Attribute(localName!);
             }
             else
             {
@@ -28,13 +30,14 @@ namespace NuGetPe
 
         [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters",
             Justification = "We don't care about base types")]
-        public static string GetOptionalElementValue(this XElement element, string localName,
-                                                     string namespaceName = null)
+        public static string? GetOptionalElementValue(this XElement element, string localName,
+                                                     string? namespaceName = null)
         {
-            XElement child;
+            ArgumentNullException.ThrowIfNull(element);
+            XElement? child;
             if (string.IsNullOrEmpty(namespaceName))
             {
-                child = element.Element(localName);
+                child = element.Element(localName!);
             }
             else
             {
@@ -45,6 +48,7 @@ namespace NuGetPe
 
         public static IEnumerable<XElement> ElementsNoNamespace(this XContainer container, string localName)
         {
+            ArgumentNullException.ThrowIfNull(container);
             return container.Elements().Where(e => e.Name.LocalName == localName);
         }
 
@@ -56,14 +60,15 @@ namespace NuGetPe
         // REVIEW: We can use a stack if the perf is bad for Except and MergeWith
         public static XElement Except(this XElement source, XElement target)
         {
-            if (target == null)
+            ArgumentNullException.ThrowIfNull(source);
+            if (target is null)
             {
                 return source;
             }
 
             var attributesToRemove = from e in source.Attributes()
-                                                         where AttributeEquals(e, target.Attribute(e.Name))
-                                                         select e;
+                                     where AttributeEquals(e, target.Attribute(e.Name))
+                                     select e;
             // Remove the attributes
             foreach (var a in attributesToRemove.ToList())
             {
@@ -96,9 +101,11 @@ namespace NuGetPe
 
         [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures",
             Justification = "No reason to create a new type")]
-        public static XElement MergeWith(this XElement source, XElement target,
-                                         IDictionary<XName, Action<XElement, XElement>> nodeActions)
+        public static XElement MergeWith(this XElement source, XElement? target,
+                                         IDictionary<XName, Action<XElement, XElement>>? nodeActions)
         {
+            ArgumentNullException.ThrowIfNull(source);
+
             if (target == null)
             {
                 return source;
@@ -139,7 +146,7 @@ namespace NuGetPe
             return source;
         }
 
-        private static XElement FindElement(XElement source, XElement targetChild)
+        private static XElement? FindElement(XElement source, XElement targetChild)
         {
             // Get all of the elements in the source that match this name
             var sourceElements = source.Elements(targetChild.Name).ToList();
@@ -155,10 +162,10 @@ namespace NuGetPe
             Debug.Assert(left.Name == right.Name);
 
             // First check how much attribute names and values match
-            var leftExactMathes = CountMatches(left, target, AttributeEquals);
-            var rightExactMathes = CountMatches(right, target, AttributeEquals);
+            var leftExactMatches = CountMatches(left, target, AttributeEquals);
+            var rightExactMatches = CountMatches(right, target, AttributeEquals);
 
-            if (leftExactMathes == rightExactMathes)
+            if (leftExactMatches == rightExactMatches)
             {
                 // Then check which names match
                 var leftNameMatches = CountMatches(left, target, (a, b) => a.Name == b.Name);
@@ -167,7 +174,7 @@ namespace NuGetPe
                 return rightNameMatches.CompareTo(leftNameMatches);
             }
 
-            return rightExactMathes.CompareTo(leftExactMathes);
+            return rightExactMatches.CompareTo(leftExactMatches);
         }
 
         private static int CountMatches(XElement left, XElement right, Func<XAttribute, XAttribute, bool> matcher)
@@ -196,6 +203,9 @@ namespace NuGetPe
 
         public static void RemoveAttributes(this XElement element, Func<XAttribute, bool> condition)
         {
+            ArgumentNullException.ThrowIfNull(element);
+            ArgumentNullException.ThrowIfNull(condition);
+
             element.Attributes()
                 .Where(condition)
                 .ToList()
@@ -206,14 +216,14 @@ namespace NuGetPe
                 .ForEach(e => RemoveAttributes(e, condition));
         }
 
-        private static bool AttributeEquals(XAttribute source, XAttribute target)
+        private static bool AttributeEquals(XAttribute? source, XAttribute? target)
         {
-            if (source == null && target == null)
+            if (source is null && target is null)
             {
                 return true;
             }
 
-            if (source == null || target == null)
+            if (source is null || target is null)
             {
                 return false;
             }

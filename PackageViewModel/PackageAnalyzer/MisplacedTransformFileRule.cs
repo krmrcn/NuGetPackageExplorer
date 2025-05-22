@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
-using NuGetPe;
+
 using NuGetPackageExplorer.Types;
-using NuGet.Packaging;
+
+using NuGetPe;
 
 namespace PackageExplorerViewModel.Rules
 {
     [Export(typeof(IPackageRule))]
-    internal class MisplacedTransformFileRule : IPackageRule
+    internal sealed class MisplacedTransformFileRule : IPackageRule
     {
         private const string ContentFolder = "content";
         private const string CodeTransformExtension = ".pp";

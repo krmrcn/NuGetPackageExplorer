@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <RootNamespace>NuGetPe</RootNamespace>
+    <PackAsTool>true</PackAsTool>
+    <Product>NuGet Package Explorer</Product>
+    <Description>Enables Validation of .NET Packages from the CLI</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Core.csproj" />
+    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
+    <PackageReference Include="System.CommandLine" />
+  </ItemGroup>
+
+</Project>

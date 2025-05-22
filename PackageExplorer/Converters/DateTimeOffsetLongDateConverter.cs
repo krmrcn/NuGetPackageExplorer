@@ -1,8 +1,14 @@
-﻿using NuGet;
-using NuGet.ProjectManagement;
-using System;
+﻿using System;
 using System.Globalization;
+using NuGet.ProjectManagement;
+
+#if HAS_UNO
+using Microsoft.UI.Xaml.Data;
+using _CultureInfo = System.String;
+#else
 using System.Windows.Data;
+using _CultureInfo = System.Globalization.CultureInfo;
+#endif
 
 namespace PackageExplorer
 {
@@ -10,7 +16,7 @@ namespace PackageExplorer
     {
         #region IValueConverter Members
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object value, Type targetType, object parameter, _CultureInfo culture)
         {
             if (value is DateTimeOffset dateTimeOffset)
             {
@@ -18,7 +24,13 @@ namespace PackageExplorer
                 {
                     var format = parameter as string;
                     if (!string.IsNullOrWhiteSpace(format))
-                        return dateTimeOffset.LocalDateTime.ToString(format);
+                    {
+#if HAS_UNO
+                        return dateTimeOffset.LocalDateTime.ToString(format, new CultureInfo(culture));
+#else
+                        return dateTimeOffset.LocalDateTime.ToString(format, culture);
+#endif
+                    }
 
                     return dateTimeOffset.LocalDateTime.ToLongDateString();
                 }
@@ -26,7 +38,7 @@ namespace PackageExplorer
             return null;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, _CultureInfo culture)
         {
             throw new NotImplementedException();
         }

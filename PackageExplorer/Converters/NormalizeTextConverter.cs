@@ -11,13 +11,13 @@ namespace PackageExplorer
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var stringValue = (string) value;
+            var stringValue = (string)value;
             if (string.IsNullOrEmpty(stringValue))
             {
                 return stringValue;
             }
 
-            // replace a series of whitepaces with a single whitespace
+            // replace a series of whitespaces with a single whitespace
             // REVIEW: Should we avoid regex and just do this manually?
             return Regex.Replace(stringValue, @"[\f\t\v\x85\p{Z}]+", " ");
         }

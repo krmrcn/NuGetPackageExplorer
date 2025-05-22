@@ -19,7 +19,7 @@ namespace PackageExplorer
 
         private static void OnIconPropertyChanged(object sender, DependencyPropertyChangedEventArgs args)
         {
-            ((GrayscaleMenuItem) sender).UpdateImageContent();
+            ((GrayscaleMenuItem)sender).UpdateImageContent();
         }
 
         private void OnIsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -32,6 +32,14 @@ namespace PackageExplorer
             if (Icon is Image icon)
             {
                 if (icon.Effect is GrayscaleEffect.GrayscaleEffect effect)
+                {
+                    effect.DesaturationFactor = IsEnabled ? 1 : 0;
+                }
+            }
+
+            if (Icon is ContentPresenter cp)
+            {
+                if (cp.Effect is GrayscaleEffect.GrayscaleEffect effect)
                 {
                     effect.DesaturationFactor = IsEnabled ? 1 : 0;
                 }
